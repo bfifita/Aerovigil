@@ -28,6 +28,28 @@ if st.button("Calculate Fatigue Risk", width="stretch"):
     st.subheader(f"Fatigue Score: {score}/100")
     st.progress(score / 100)
 
+    st.divider()
+st.subheader("Fatigue Risk Gauge")
+
+gauge_color = "green"
+if score >= 65:
+    gauge_color = "red"
+elif score >= 35:
+    gauge_color = "orange"
+
+st.markdown(
+    f"""
+    <div style="background-color:{gauge_color};
+                padding:20px;
+                border-radius:10px;
+                text-align:center;
+                font-size:24px;
+                color:white;">
+        Fatigue Risk Score: {score}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     if score < 35:
         risk_level = "LOW"
         st.success(f"Fatigue Risk Level: {risk_level}")
