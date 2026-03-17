@@ -1,28 +1,43 @@
 # AeroVigil
 
-Predictive fatigue risk analytics for airline safety teams.
+Predictive Fatigue Analytics for Aviation Safety Teams
+
+AeroVigil is a prototype fatigue risk analysis tool designed to help aviation safety departments identify potential crew fatigue risks using operational schedule data.
 
 ## Problem
-Airlines struggle to predict crew fatigue before flights operate.  
-Fatigue increases operational risk, safety incidents, and human error.
+
+Airlines must manage fatigue risk under Fatigue Risk Management Systems (FRMS).  
+However, many operators lack simple tools to quickly evaluate fatigue risk across multiple crew schedules.
 
 ## Solution
-AeroVigil will analyze:
 
-- Crew schedules
+AeroVigil analyzes crew scheduling factors and calculates a fatigue risk score based on:
+
 - Duty hours
-- Circadian rhythm disruption
-- Time zone changes
 - Flight segments
+- Time zone crossings
+- Rest hours
+- Circadian disruption
 
-The system will generate a **Fatigue Risk Score** for airline safety teams.
+The system then flags elevated fatigue risk and explains the operational drivers behind the risk.
 
-## Future Features
-- Fatigue Risk Calculator
-- Crew Schedule Analyzer
-- Safety Dashboard
-- SMS Compliance Reports
+## Current Features
 
-## Founder
-Bosslady Fifita  
-MS Aeronautics – Human Factors
+- Fatigue risk scoring algorithm
+- CSV crew schedule analysis
+- Fatigue risk ranking dashboard
+- High-risk crew alerts
+- Fatigue driver explanations
+- Fatigue risk heatmap visualization
+
+## Example Output
+
+| Pilot | Fatigue Score | Risk | Why Flagged |
+|------|------|------|------|
+| Mike | 82 | CRITICAL | Long duty period, Short rest, Circadian disruption |
+| John | 72 | HIGH | Multiple time zones, High segments |
+| Sarah | 21 | LOW | No major fatigue drivers |
+
+## Running the Prototype
+
+Install dependencies:
