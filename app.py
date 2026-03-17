@@ -1,5 +1,5 @@
-# app.py
 import streamlit as st
+import pandas as pd
 
 def fatigue_risk_score(duty_hours, segments, timezone_changes, rest_hours, circadian_disruption):
     score = 0
@@ -18,55 +18,67 @@ def fatigue_risk_score(duty_hours, segments, timezone_changes, rest_hours, circa
 
     return min(score, 100)
 
-
 def risk_level(score):
     if score < 30:
-        return "Low"
+        return "LOW"
     elif score < 60:
-        return "Moderate"
+        return "MODERATE"
     elif score < 80:
-        return "High"
-    return "Critical"
+        return "HIGH"
+    return "CRITICAL"
 
-
-st.set_page_config(page_title="AeroVigil", layout="centered")
+st.set_page_config(page_title="AeroVigil", layout="wide")
 
 st.title("AeroVigil")
-st.subheader("Predictive Fatigue Risk Dashboard")
-st.caption("Prototype for aviation safety teams and SMS programs")
+st.subheader("CSV Crew Fatigue Risk Analyzer")
+st.caption("Prototype for airline safety teams and SMS programs")
 
-duty_hours = st.number_input("Duty Hours", min_value=0.0, max_value=24.0, value=12.0, step=0.5)
-segments = st.number_input("Flight Segments", min_value=0, max_value=10, value=4, step=1)
-timezone_changes = st.number_input("Time Zone Changes", min_value=0, max_value=12, value=2, step=1)
-rest_hours = st.number_input("Rest Hours Before Duty", min_value=0.0, max_value=24.0, value=8.0, step=0.5)
-circadian_disruption = st.checkbox("Circadian Disruption (overnight / sleep-window overlap)", value=True)
+uploaded_file = st.file_uploader("Upload crew schedule CSV", type=["csv"])
 
-if st.button("Calculate Fatigue Risk"):
-    score = fatigue_risk_score(
-        duty_hours,
-        segments,
-        timezone_changes,
-        rest_hours,
-        circadian_disruption
-    )
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+else:
+    st.info("No file uploaded yet. Using sample data from crew_data.csv format.")
+    df = pd.DataFrame({
+        "Pilot": ["John", "Sarah", "Mike", "Lisa"],
+        "Duty Hours": [12, 9, 14, 10],
+        "Segments": [4, 3, 5, 2],
+        "Time Zones": [2, 1, 3, 0],
+        "Rest Hours": [8, 12, 7, 11],
+        "Circadian Disruption": ["Yes", "No", "Yes", "No"]
+    })
 
-    level = risk_level(score)
+def to_bool(value):
+    return str(value).strip().lower() in ["yes", "true", "1"]
 
-    st.metric("Fatigue Risk Score", f"{score}/100")
-    st.metric("Risk Level", level)
+df["Fatigue Score"] = df.apply(
+    lambda row: fatigue_risk_score(
+        row["Duty Hours"],
+        row["Segments"],
+        row["Time Zones"],
+        row["Rest Hours"],
+        to_bool(row["Circadian Disruption"])
+    ),
+    axis=1
+)
 
-    if score >= 80:
-        st.error("Critical fatigue risk. Review duty assignment immediately.")
-    elif score >= 60:
-        st.warning("High fatigue risk. Consider mitigation before release.")
-    elif score >= 30:
-        st.info("Moderate fatigue risk. Monitor closely.")
-    else:
-        st.success("Low fatigue risk. Operation appears acceptable.")
+df["Risk"] = df["Fatigue Score"].apply(risk_level)
+df = df.sort_values(by="Fatigue Score", ascending=False)
 
-    st.markdown("### Operational Summary")
-    st.write(f"- Duty Hours: {duty_hours}")
-    st.write(f"- Segments: {segments}")
-    st.write(f"- Time Zone Changes: {timezone_changes}")
-    st.write(f"- Rest Hours: {rest_hours}")
-    st.write(f"- Circadian Disruption: {'Yes' if circadian_disruption else 'No'}")
+st.markdown("### Crew Fatigue Risk Results")
+st.dataframe(df, use_container_width=True)
+
+high_risk = df[df["Fatigue Score"] >= 60]
+
+st.markdown("### Operational Alerts")
+if not high_risk.empty:
+    st.warning(f"{len(high_risk)} crew member(s) flagged as HIGH or CRITICAL fatigue risk.")
+    st.dataframe(high_risk[["Pilot", "Fatigue Score", "Risk"]], use_container_width=True)
+else:
+    st.success("No crew members currently flagged as HIGH or CRITICAL risk.")
+
+highest = df.iloc[0]
+st.markdown("### Highest Risk Crew Member")
+st.metric("Pilot", highest["Pilot"])
+st.metric("Fatigue Score", highest["Fatigue Score"])
+st.metric("Risk Level", highest["Risk"])
