@@ -156,6 +156,8 @@ pip install -r requirements.txt
 streamlit run app.py
 
 
+```
+
 10. Vision
 AeroVigil is more than a calculator — it represents the beginning of a broader aviation safety concept focused on predictive fatigue analytics.
 The long-term vision is to build tools that help aviation organizations move from reacting to fatigue events to predicting and preventing fatigue risk before it impacts safety.
