@@ -102,3 +102,59 @@ AeroVigil/
 ├── fatigue_calculator.py
 ├── requirements.txt
 └── README.md
+
+
+## 9. Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/bosslady808/AeroVigil.git
+cd AeroVigil
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the app:
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## 10. Vision
+
+AeroVigil is more than a calculator — it represents the beginning of a broader aviation safety concept focused on **predictive fatigue analytics**.
+
+The long-term vision is to build tools that help aviation organizations move from reacting to fatigue events to **predicting and preventing fatigue risk before it impacts safety**.
+
+Future versions of AeroVigil could support airline **Safety Management Systems (SMS)** and **Fatigue Risk Management Systems (FRMS)** through predictive analytics and operational risk visualization.
+
+---
+
+## 11. Author
+
+**Bosslady Fifita**
+MS Aeronautics Graduate Student
+
+Research Focus:
+
+* Aviation Human Factors
+* Fatigue Risk Management
+* Aviation Safety Systems
+* Predictive Safety Analytics
+
+---
+
+## 12. Disclaimer
+
+AeroVigil is a prototype created for **educational, research, and demonstration purposes only**.
+
+This project is not intended to replace certified aviation fatigue management systems, regulatory compliance tools, or operational decision-making systems used by airlines or aviation authorities.
+
+The fatigue scoring model used in this prototype is a simplified demonstration and should **not** be used for operational aviation safety decisions.
