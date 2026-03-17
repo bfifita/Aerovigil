@@ -40,4 +40,10 @@ The system then flags elevated fatigue risk and explains the operational drivers
 
 ## Running the Prototype
 
+AeroVigil is a prototype aviation fatigue risk analytics tool designed to help ariline safety teams identify fatigue risk using duty hours, circadian disruption, flight segments, rest periods, and timezone changes. 
+Built with:
+-python
+-streamlit
+-pandas
+
 Install dependencies:
