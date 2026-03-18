@@ -122,3 +122,25 @@ AeroVigil/
 ├── requirements.txt
 ├── README.md
 └── aerovigil_v3.png
+
+
+Vision
+AeroVigil represents an early-stage concept for predictive aviation safety analytics.
+The long-term goal is to help aviation organizations transition from reactive fatigue management to proactive, data-driven risk prediction, supporting both operational decision-making and safety systems such as SMS and FRMS.
+Author
+Bosslady Fifita
+Founder — AeroVigil
+MS Aeronautics
+Focus Areas:
+Aviation Human Factors
+Fatigue Risk Management
+Aviation Safety Systems
+Predictive Safety Analytics
+Disclaimer
+AeroVigil is a prototype created for educational, research, and demonstration purposes only.
+It is not intended to replace certified aviation fatigue management systems, regulatory compliance tools, or operational decision-making systems used by airlines or aviation authorities.
+License
+This project is licensed under the MIT License.
+See the LICENSE file for details.
+
+
