@@ -10,14 +10,8 @@ Below is a preview of the AeroVigil prototype interface and fatigue risk visuali
 
 ## AeroVigil Dashboard
 
-### Main Dashboard
-![Dashboard](aerovigil_dashboard.png)
 
-### Fatigue Risk Trend
-![Trend](aerovigil_trend.png)
-
-### Scenario Comparison Tool
-![Comparison](aerovigil_comparison.png)
+![AeroVigil Dashboard](aerovigil_update.png)
 
 AeroVigil is a prototype aviation safety tool designed to estimate **crew fatigue risk** using key operational factors such as duty hours, flight segments, time zone changes, rest periods, and circadian disruption.
 
