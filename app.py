@@ -5,16 +5,60 @@ from fatigue_calculator import calculate_fatigue_score
 
 st.set_page_config(page_title="AeroVigil", layout="wide")
 
+# -------------------------------------------------
+# Helper functions
+# -------------------------------------------------
+def classify_risk(score):
+    if score < 35:
+        return "LOW"
+    elif score < 70:
+        return "MODERATE"
+    return "HIGH"
+
+
+def get_recommendation(score):
+    if score < 35:
+        return "Crew appears fit for duty. Continue monitoring."
+    elif score < 70:
+        return "Moderate fatigue risk detected. Consider added rest or schedule review."
+    return "High fatigue risk detected. Recommend immediate mitigation and scheduling review."
+
+
+def get_alert_message(score):
+    if score < 35:
+        return "Low operational fatigue risk."
+    elif score < 70:
+        return "Caution: Moderate fatigue risk may affect performance."
+    return "Warning: High fatigue risk may affect crew safety and operational reliability."
+
+
+def build_trend_data(base_score):
+    days = ["Day 1", "Day 2", "Day 3", "Day 4"]
+    trend_scores = [
+        max(0, min(100, base_score - 12)),
+        max(0, min(100, base_score - 5)),
+        max(0, min(100, base_score + 4)),
+        max(0, min(100, base_score)),
+    ]
+    return pd.DataFrame({"Day": days, "Fatigue Score": trend_scores})
+
+
+# -------------------------------------------------
+# Title / Header
+# -------------------------------------------------
 st.title("AeroVigil")
 st.subheader("Predictive Fatigue Risk Analytics for Aviation Safety")
 st.write(
-    "A prototype aviation safety tool for estimating crew fatigue risk using duty time, "
-    "segments, rest, time zone changes, circadian disruption, and a simplified alertness model."
+    "AeroVigil is a prototype aviation safety dashboard designed to estimate "
+    "crew fatigue risk using duty time, flight segments, rest, timezone changes, "
+    "and circadian disruption."
 )
 
 st.divider()
 
-# Sidebar inputs
+# -------------------------------------------------
+# Sidebar Inputs
+# -------------------------------------------------
 st.sidebar.header("Crew Duty Inputs")
 
 duty_hours = st.sidebar.slider("Duty Hours", 0, 16, 8)
@@ -22,9 +66,10 @@ segments = st.sidebar.slider("Flight Segments", 1, 8, 2)
 timezone_changes = st.sidebar.slider("Time Zone Changes", 0, 6, 0)
 rest_hours = st.sidebar.slider("Rest Hours Before Duty", 0, 16, 10)
 circadian_disruption = st.sidebar.slider("Circadian Disruption Level", 0, 10, 3)
-hours_awake = st.sidebar.slider("Hours Awake Before/During Duty", 0, 24, 10)
 
-# Core fatigue score
+# -------------------------------------------------
+# Main fatigue score
+# -------------------------------------------------
 score = calculate_fatigue_score(
     duty_hours,
     segments,
@@ -33,203 +78,133 @@ score = calculate_fatigue_score(
     circadian_disruption
 )
 
-# Risk classification
-if score < 35:
-    risk_level = "LOW"
-    recommendation = "Fatigue risk appears manageable. Continue normal monitoring."
-elif score < 65:
-    risk_level = "MODERATE"
-    recommendation = "Consider additional rest, schedule review, or fatigue mitigation strategies."
-else:
-    risk_level = "HIGH"
-    recommendation = "High fatigue risk detected. Consider schedule adjustment, additional rest, or operational mitigation."
+risk_level = classify_risk(score)
+recommendation = get_recommendation(score)
+alert_message = get_alert_message(score)
 
-# Simplified alertness model
-alertness = 100
-alertness -= hours_awake * 2.5
-alertness -= circadian_disruption * 2.0
-alertness -= timezone_changes * 3.0
-alertness += rest_hours * 1.2
-alertness = max(0, min(100, alertness))
-
-if alertness >= 80:
-    effectiveness_label = "HIGH"
-elif alertness >= 60:
-    effectiveness_label = "MODERATE"
-else:
-    effectiveness_label = "LOW"
-
-# Circadian phase label
-if 0 <= hours_awake <= 8:
-    circadian_phase = "Optimal/Daytime Zone"
-elif 9 <= hours_awake <= 16:
-    circadian_phase = "Extended Wakefulness Zone"
-else:
-    circadian_phase = "Critical Fatigue Zone"
-
-# Top metrics
+# -------------------------------------------------
+# Top Dashboard Metrics
+# -------------------------------------------------
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Fatigue Score", f"{score}/100")
+    st.metric("Fatigue Risk Score", f"{score}/100")
 
 with col2:
     st.metric("Risk Level", risk_level)
 
 with col3:
-    st.metric("Alertness Effectiveness", f"{alertness:.0f}%")
+    st.metric("Operational Recommendation", "Review Status")
 
 st.divider()
 
-# Fatigue assessment
-st.subheader("Fatigue Assessment")
-st.write(f"**Mitigation Recommendation:** {recommendation}")
-st.write(f"**Circadian Phase:** {circadian_phase}")
-st.write(f"**Operational Effectiveness Rating:** {effectiveness_label}")
+# -------------------------------------------------
+# Alert Section
+# -------------------------------------------------
+st.subheader("Operational Alert")
 
-# Operational alerts
-st.subheader("Operational Alerts")
-
-if score >= 65:
-    st.error("⚠️ High fatigue risk detected. Review schedule, rest opportunity, or mitigation strategy.")
-elif score >= 35:
-    st.warning("⚠️ Moderate fatigue risk detected. Monitor crew condition and consider mitigation.")
+if risk_level == "LOW":
+    st.success(alert_message)
+elif risk_level == "MODERATE":
+    st.warning(alert_message)
 else:
-    st.success("✅ Low fatigue risk detected. No immediate operational alert.")
+    st.error(alert_message)
 
-if alertness < 60:
-    st.error("⚠️ Alertness effectiveness is low. Fatigue exposure may affect operational performance.")
-elif alertness < 80:
-    st.warning("⚠️ Alertness effectiveness is reduced. Monitor for performance degradation.")
-else:
-    st.success("✅ Alertness effectiveness is within an acceptable prototype range.")
+st.write(f"**Recommendation:** {recommendation}")
 
-if hours_awake >= 18:
-    st.error("⚠️ Hours awake are in a critical range associated with elevated fatigue risk.")
-elif hours_awake >= 12:
-    st.warning("⚠️ Extended wakefulness detected. Monitor fatigue accumulation.")
-else:
-    st.success("✅ Hours awake are within a lower-risk prototype range.")
+# -------------------------------------------------
+# Trend Chart
+# -------------------------------------------------
+st.subheader("Fatigue Risk Trend")
+trend_df = build_trend_data(score)
 
-# Scenario summary
-summary_df = pd.DataFrame(
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(trend_df["Day"], trend_df["Fatigue Score"], marker="o")
+ax.set_xlabel("Duty Period")
+ax.set_ylabel("Fatigue Score")
+ax.set_title("4-Day Fatigue Risk Trend")
+ax.set_ylim(0, 100)
+st.pyplot(fig)
+
+# -------------------------------------------------
+# Detailed Driver Breakdown
+# -------------------------------------------------
+st.subheader("Fatigue Driver Summary")
+
+driver_data = pd.DataFrame(
     {
-        "Metric": [
+        "Factor": [
             "Duty Hours",
             "Flight Segments",
-            "Time Zone Changes",
+            "Timezone Changes",
             "Rest Hours",
             "Circadian Disruption",
-            "Hours Awake",
-            "Fatigue Score",
-            "Risk Level",
-            "Alertness Effectiveness",
-            "Circadian Phase",
         ],
-        "Value": [
+        "Input Value": [
             duty_hours,
             segments,
             timezone_changes,
             rest_hours,
             circadian_disruption,
-            hours_awake,
-            score,
-            risk_level,
-            f"{alertness:.0f}%",
-            circadian_phase,
         ],
     }
 )
 
-st.subheader("Scenario Summary")
-st.dataframe(summary_df, use_container_width=True)
+st.dataframe(driver_data, use_container_width=True)
 
-# Scenario comparison chart
-st.subheader("Scenario Comparison")
+# -------------------------------------------------
+# Scenario Comparison Tool
+# -------------------------------------------------
+st.divider()
+st.subheader("Scenario Comparison Tool")
 
-comparison_df = pd.DataFrame(
+left_col, right_col = st.columns(2)
+
+with left_col:
+    st.markdown("### Scenario A")
+    duty_a = st.slider("Duty Hours (A)", 0, 16, 8, key="duty_a")
+    segments_a = st.slider("Segments (A)", 1, 8, 2, key="segments_a")
+    timezone_a = st.slider("Timezone Changes (A)", 0, 6, 0, key="timezone_a")
+    rest_a = st.slider("Rest Hours (A)", 0, 16, 10, key="rest_a")
+    circadian_a = st.slider("Circadian Disruption (A)", 0, 10, 3, key="circadian_a")
+
+with right_col:
+    st.markdown("### Scenario B")
+    duty_b = st.slider("Duty Hours (B)", 0, 16, 10, key="duty_b")
+    segments_b = st.slider("Segments (B)", 1, 8, 3, key="segments_b")
+    timezone_b = st.slider("Timezone Changes (B)", 0, 6, 1, key="timezone_b")
+    rest_b = st.slider("Rest Hours (B)", 0, 16, 8, key="rest_b")
+    circadian_b = st.slider("Circadian Disruption (B)", 0, 10, 5, key="circadian_b")
+
+score_a = calculate_fatigue_score(duty_a, segments_a, timezone_a, rest_a, circadian_a)
+score_b = calculate_fatigue_score(duty_b, segments_b, timezone_b, rest_b, circadian_b)
+
+risk_a = classify_risk(score_a)
+risk_b = classify_risk(score_b)
+
+compare_df = pd.DataFrame(
     {
-        "Category": ["Fatigue Score", "Alertness Effectiveness"],
-        "Value": [score, alertness],
+        "Scenario": ["Scenario A", "Scenario B"],
+        "Fatigue Score": [score_a, score_b],
+        "Risk Level": [risk_a, risk_b],
     }
 )
 
-fig1, ax1 = plt.subplots(figsize=(8, 4))
-ax1.bar(comparison_df["Category"], comparison_df["Value"])
-ax1.set_ylim(0, 100)
-ax1.set_ylabel("Score")
-ax1.set_title("Fatigue vs Alertness")
-st.pyplot(fig1)
+st.dataframe(compare_df, use_container_width=True)
 
-# 4-day fatigue trend predictor
-st.subheader("4-Day Fatigue Trend Predictor")
+if score_a < score_b:
+    st.info("Scenario A appears safer based on the current fatigue inputs.")
+elif score_b < score_a:
+    st.info("Scenario B appears safer based on the current fatigue inputs.")
+else:
+    st.info("Both scenarios currently show the same fatigue risk score.")
 
-days = ["Day 1", "Day 2", "Day 3", "Day 4"]
-fatigue_trend = []
-alertness_trend = []
-
-for day in range(4):
-    projected_score = min(100, score + day * 5)
-    projected_alertness = max(0, alertness - day * 6)
-    fatigue_trend.append(projected_score)
-    alertness_trend.append(projected_alertness)
-
-trend_df = pd.DataFrame(
-    {
-        "Day": days,
-        "Fatigue Score": fatigue_trend,
-        "Alertness Effectiveness": alertness_trend,
-    }
-)
-
-st.dataframe(trend_df, use_container_width=True)
-
-fig2, ax2 = plt.subplots(figsize=(10, 4))
-ax2.plot(trend_df["Day"], trend_df["Fatigue Score"], marker="o", label="Fatigue Score")
-ax2.plot(
-    trend_df["Day"],
-    trend_df["Alertness Effectiveness"],
-    marker="o",
-    label="Alertness Effectiveness",
-)
-ax2.set_ylim(0, 100)
-ax2.set_ylabel("Score / Effectiveness")
-ax2.set_title("Projected 4-Day Fatigue and Alertness Trend")
-ax2.legend()
-st.pyplot(fig2)
-
-# Alertness over time graph
-st.subheader("Alertness Over Time")
-
-hours = list(range(0, 25))
-alertness_curve = []
-
-for h in hours:
-    curve_value = 100
-    curve_value -= h * 2.8
-    curve_value -= circadian_disruption * 2.0
-    curve_value -= timezone_changes * 2.5
-    curve_value += rest_hours * 1.1
-    curve_value = max(0, min(100, curve_value))
-    alertness_curve.append(curve_value)
-
-curve_df = pd.DataFrame(
-    {
-        "Hours Awake": hours,
-        "Alertness": alertness_curve,
-    }
-)
-
-fig3, ax3 = plt.subplots(figsize=(10, 4))
-ax3.plot(curve_df["Hours Awake"], curve_df["Alertness"], marker="o")
-ax3.set_ylim(0, 100)
-ax3.set_xlabel("Hours Awake")
-ax3.set_ylabel("Alertness Effectiveness (%)")
-ax3.set_title("Prototype Alertness Decay Curve")
-st.pyplot(fig3)
-
-# Disclaimer
-st.info(
-    "Disclaimer: This simplified alertness model is a prototype for educational and concept "
-    "demonstration purposes only. It is not a validated SAFTE model and should not be used for operational safety decisions."
+# -------------------------------------------------
+# Footer / Disclaimer
+# -------------------------------------------------
+st.divider()
+st.caption(
+    "Disclaimer: AeroVigil is a prototype decision-support tool for demonstration "
+    "purposes only and does not replace approved fatigue risk management systems, "
+    "operational control procedures, or regulatory safety assessments."
 )
