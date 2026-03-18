@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from fatigue_calculator import calculate_fatigue_score
 
-st.set_page_config(page_title="AeroVigil V3", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="AeroVigil ", page_icon="✈️", layout="wide")
 
 # ---------- HELPERS ----------
 def get_risk_level(score):
