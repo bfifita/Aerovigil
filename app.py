@@ -22,7 +22,7 @@ def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(value, high))
 
 
-def calculate_fatigue_score(
+def calculate_fatigue_score( 
     duty_hours: float,
     segments: int,
     timezone_changes: int,
@@ -553,4 +553,4 @@ with tab2:
     a_rank = scenario_rank(scenario_a)
     b_rank = scenario_rank(scenario_b)
 
-    better = "Scenario A" if a_rank < b_rank else "Scenario
+    better = "Scenario A" if a_rank < b_rank else "Scenario B"
